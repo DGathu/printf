@@ -1,93 +1,117 @@
-#include <stdio.h>
 #include "main.h"
 
 /**
- * print_op - checks specifier
- * @format: the format
- * @print_arr: array of struct
- * @list: arguments
- * 
- * Return: char to print
+ * check_buffer_overflow - checks buffer
+ * @buffer: the buffer holding string
+ * @len: position
+ *
+ * Return: len
  */
 
-int print_op(const char *format, fmt_t *print_arr, va_list list)
+int check_buffer_overflow(char *buffer, int len)
 {
-	char x;
-	int count = 0, y = 0, z = 0;
-
-	x = format[y];
-
-	while (x != '\0')
+	if (len > 1020)
 	{
-		if (x == '%')
-		{
-			z = 0;
-			y++;
-			x = format[y];
-			
-			while (print_arr[z].type != NULL &&
-					x != *(print_arr[z].type))
-			{
-				z++;
-			}
-			if (print_arr[z].type != NULL)
-			{
-				count = count + print_arr[z].f(list);
-			}
-			else
-			{
-				if (x == '\0')
-				{
-					return (-1);
-				}
-				if (x != '%')
-				{
-					count += _putchar('%');
-				}
-				count += _putchar(x);
-			}
-		}
-		else
-		{
-			count += _putchar(x);
-		}
-		y++;
-		x = format[y];
+		write(1, buffer, len);
+		len = 0;
 	}
-	return (count);
+	return (len);
 }
 
 /**
- * _printf - prints output
- * @format: the format
+ * _printf - copy of printf functionality
+ * @format: indentities
  *
- * Return: char to print
+ * Return: strings with identifiers
  */
 
 int _printf(const char *format, ...)
 {
-	va_list list;
+	int len = 0;
+	int total_len = 0;
 	int x = 0;
+	int y = 0;
+	va_list list;
+	char *buffer;
+	char *str;
+	char* (*f)(va_list);
 
-	fmt_t ops[] = {
-		{"c", ch},
-		{"R", _rot13},
-		{"s", str},
-		{"X", _hex_u},
-		{"d", _int},
-		{"x", _hex_l},
-		{"b", _bin},
-		{"o", _oct},
-		{"i", _int},
-		{"u", _ui},
-		{NULL, NULL}
-	};
 	if (format == NULL)
 	{
 		return (-1);
 	}
+	buffer = create_buffer();
+
+	if (buffer == NULL)
+	{
+		return (-1);
+	}
 	va_start(list, format);
-	x = print_op(format, ops, list);
-	va_end(list);
-	return (x);
+
+	while (format[x] != '\0')
+	{
+		if (format[x] != '%')
+		{
+			len = check_buffer_overflow(buffer, len);
+			buffer[len++] = format[x++];
+			total_len++;
+		}
+		else
+		{
+			x++;
+			if (format[x] == '\0')
+			{
+				va_end(list);
+				free(buffer);
+				return (-1);
+			}
+			if (format[x] == '%')
+			{
+				len = check_buffer_overflow(buffer, len);
+				buffer[len++] = format[x];
+				total_len++;
+			}
+			else
+			{
+				f = get_func(format[x]);
+				if (f == NULL)
+				{
+					len = check_buffer_overflow(buffer, len);
+					buffer[len++] = '%';
+					total_len++;
+					buffer[len++] = format[x];
+					total_len++;
+				}
+				else
+				{
+					str = f(list);
+					if (str == NULL)
+					{
+						va_end(list);
+						free(buffer);
+						return (-1);
+					}
+					if (format[x] == 'c' && str[0] == '\0')
+					{
+						len = check_buffer_overflow(buffer, len);
+						buffer[len++] = '\0';
+						total_len++;
+					}
+					y = 0;
+
+					while (str[y] != '\0')
+					{
+						len = check_buffer_overflow(buffer, len);
+						buffer[len++] = str[y];
+						total_len++;
+						y++;
+					}
+					free(str);
+				}
+			}
+			x++;
+		}
+	}
+	write_buffer(buffer, len, list);
+	return (total_len);
 }

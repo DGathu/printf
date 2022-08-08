@@ -10,25 +10,25 @@
  * @type: format to print
  * @f: function
  */
-typedef struct fmt
+typedef struct types
 {
-	char *type;
-	int (*f)();
-} fmt_t;
+	char id;
+	char* (*func)(va_list);
+} print;
+
+char* (*get_func(char i))(va_list);
+char *create_buffer(void);
+void write_buffer(char *buffer, int len, va_list list);
+char *_strcpy(char *dest, char *src);
+int _strlen(char *s);
 
 int _printf(const char *format, ...);
-int print_op(const char *format, fmt_t *print_arr, va_list list);
-int _putchar(char c);
-int ch(va_list charact);
-int _bin(va_list bin);
-int _strlen(char *s);
-int str(va_list string);
-int _hex_u(va_list hexa);
-int _hex_l(va_list hexa);
-int _int(va_list integer);
-int _ui(va_list unsign);
-int _oct(va_list octo);
-int _rot13(va_list rot);
-int _hex_str(unsigned int n, unsigned int hex, char alpha);
+char *getoct(va_list list);
+char *rev_string(va_list list);
+char *rot13(va_list list);
+char *getob(va_list list);
+char *print_d(va_list list);
+char *print_c(va_list list);
+char *print_s(va_list list);
 
 #endif
