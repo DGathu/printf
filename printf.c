@@ -23,10 +23,10 @@ int print_op(const char *format, fmt_t *print_arr, va_list list)
 		{
 			z = 0;
 			y++;
-			x = format[b];
+			x = format[y];
 			
 			while (print_arr[z].type != NULL &&
-					a != *(print_arr[z].type))
+					x != *(print_arr[z].type))
 			{
 				z++;
 			}
