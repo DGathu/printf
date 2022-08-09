@@ -10,7 +10,7 @@
 char *getob(va_list list)
 {
 	int y = 0;
-	two = 1;
+	int twos = 1;
 	int x;
 	int z;
 	char *s;
@@ -33,13 +33,13 @@ char *getob(va_list list)
 	while (z > 1)
 	{
 		z /= 2;
-		two *= 2;
+		twos *= 2;
 	}
-	while (two > 0)
+	while (twos > 0)
 	{
-		s[y++] = (x / two + '0');
-		x %= two;
-		two /= 2;
+		s[y++] = (x / twos + '0');
+		x %= twos;
+		twos /= 2;
 	}
 	s[y] = '\0';
 	return (s);
