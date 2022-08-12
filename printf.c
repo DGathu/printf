@@ -1,21 +1,43 @@
 #include "main.h"
+#include <stddef.h>
+#include <starg.h>
 
 /**
- * check_buffer_overflow - checks buffer
- * @buffer: the buffer holding string
- * @len: position
+ * get_op - function for conversion
+ * @c: character to check
  *
- * Return: len
+ * Return: pointer
  */
 
-int check_buffer_overflow(char *buffer, int len)
+int (*get_op(const char c))(va_list)
 {
-	if (len > 1020)
+	int x = 0;
+
+	find_op op[] = {
+		{"c", print_char},
+		{"s", print_str},
+		{"i", print_nbr},
+		{"d", print_nbr},
+		{"b", print_binary},
+		{"o", print_octal},
+		{"x", print_hexa_lower},
+		{"X", print_hexa_upper},
+		{"u", print_unsigned},
+		{"S", print_str_unprintable},
+		{"r", print_str_reverse},
+		{"p", print_ptr},
+		{"R", print_rot13},
+		{"%", print_percent}
+	};
+	while (x < 14)
 	{
-		write(1, buffer, len);
-		len = 0;
+		if (c == op[x].c[0])
+		{
+			return (op[x].f);
+		}
+		x++;
 	}
-	return (len);
+	return (NULL);
 }
 
 /**
@@ -27,91 +49,44 @@ int check_buffer_overflow(char *buffer, int len)
 
 int _printf(const char *format, ...)
 {
-	int len = 0;
-	int total_len = 0;
-	int x = 0;
-	int y = 0;
-	va_list list;
-	char *buffer;
-	char *str;
-	char* (*f)(va_list);
+	va_list ep;
+	int sum = 0, x = 0;
+	int (*func)();
 
-	if (format == NULL)
+	if (!format || (format[0] == '%' && format[1] == '\0'))
 	{
 		return (-1);
 	}
-	buffer = create_buffer();
+	va_start(ep, format);
 
-	if (buffer == NULL)
+	while (format[x])
 	{
-		return (-1);
-	}
-	va_start(list, format);
-
-	while (format[x] != '\0')
-	{
-		if (format[x] != '%')
+		if (format[x] == '%')
 		{
-			len = check_buffer_overflow(buffer, len);
-			buffer[len++] = format[x++];
-			total_len++;
-		}
-		else
-		{
-			x++;
-			if (format[x] == '\0')
+			if (format[x + 1] != '\0')
 			{
-				va_end(list);
-				free(buffer);
-				return (-1);
+				func = get_op(format[x + 1]);
 			}
-			if (format[x] == '%')
+			if (func == NULL)
 			{
-				len = check_buffer_overflow(buffer, len);
-				buffer[len++] = format[x];
-				total_len++;
+				_putchar(format[x]);
+				sum++;
+				x++;
 			}
 			else
 			{
-				f = get_func(format[x]);
-				if (f == NULL)
-				{
-					len = check_buffer_overflow(buffer, len);
-					buffer[len++] = '%';
-					total_len++;
-					buffer[len++] = format[x];
-					total_len++;
-				}
-				else
-				{
-					str = f(list);
-					if (str == NULL)
-					{
-						va_end(list);
-						free(buffer);
-						return (-1);
-					}
-					if (format[x] == 'c' && str[0] == '\0')
-					{
-						len = check_buffer_overflow(buffer, len);
-						buffer[len++] = '\0';
-						total_len++;
-					}
-					y = 0;
-
-					while (str[y] != '\0')
-					{
-						len = check_buffer_overflow(buffer, len);
-						buffer[len++] = str[y];
-						total_len++;
-						y++;
-					}
-					free(str);
-				}
+				sum += func(ep);
+				x += 2;
+				continue;
 			}
+		}
+		else
+		{
+			_putchar(format[x]);
+			sum++;
 			x++;
 		}
 	}
-	write_buffer(buffer, len, list);
-	return (total_len);
+	va_end(ep);
+	return (sum);
 }
