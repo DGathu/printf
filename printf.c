@@ -1,6 +1,6 @@
 #include "main.h"
 #include <stddef.h>
-#include <starg.h>
+#include <stdarg.h>
 
 /**
  * get_op - function for conversion
